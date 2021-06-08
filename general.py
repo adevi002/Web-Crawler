@@ -11,8 +11,12 @@ def create_data_files(project_name, base_url):
     crawled = project_name + '/crawled.txt'     # once a link page is crawled, it will be added to this crawled file
     if not os.path.isfile(queue):               #checks if file exists already
         write_file(queue, base_url)
+    else:
+        open(queue, 'w').close()
     if not os.path.isfile(crawled):             #checks if file exists already
         write_file(crawled, '')
+    else:
+        open(crawled, 'w').close()
 
 # Creates a new file
 def write_file(path, data):
@@ -29,6 +33,7 @@ def append_to_file(path, data):
 def delete_file_contents(path):         # creates new file with same name but with no content, replacing the original file of same name
     with open(path, 'w'):
         pass                            # do nothing
+    # open(path, 'w').close()
 
 # Read a file and convert each line to set items
 def file_to_set(file_name):

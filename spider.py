@@ -1,6 +1,7 @@
 from urllib.request import urlopen
 from link_finder import LinkFinder
 from general import *
+import sys
 
 class Spider:
 
@@ -12,13 +13,17 @@ class Spider:
     crawled_file = ''
     queue_set = set()           # dont want to write to file every time we come across link cause that's slow;
     crawled_set = set()         # using variables that get stored to RAM is a lot faster than files stored on hard drive
+    crawl_limit = int()
+    # crawl_curr = 0
 
-    def __init__(self, project_name, base_url, domain_name):       # video 9
+    def __init__(self, project_name, base_url, domain_name, num_crawl):       # video 9
         Spider.project_name = project_name
         Spider.base_url = base_url
         Spider.domain_name = domain_name
         Spider.queue_file = Spider.project_name + '/queue.txt'
         Spider.crawled_file = Spider.project_name + '/crawled.txt'
+        Spider.crawl_limit = num_crawl
+        # crawl_curr = 0
         self.First_Spider()
         self.crawl_page('First spider', Spider.base_url)        # create first spider to crawl home page url
         # first spider has the unique task of creating project directory and two data files (queue and crawled)
@@ -37,9 +42,17 @@ class Spider:
             print(thread_name + ' is now crawling ' + page_url)
             print('Queue ' + str(len(Spider.queue)) + ' | Crawled ' + str(len(Spider.crawled)))
             Spider.add_links_to_queue(Spider.gather_links(page_url))
-            Spider.queue.remove(page_url)
+            if(page_url in Spider.queue):
+                Spider.queue.remove(page_url)
             Spider.crawled.add(page_url)            # moving link from waitlist to crawled list when crawled
             Spider.update_files()
+            if(len(Spider.crawled) >= Spider.crawl_limit):
+                # print(len(Spider.crawled))
+                # print(Spider.crawl_limit)
+                # sys.exit()
+                return
+            # print(thread_name + ' is now crawling ' + page_url)
+            # print('Queue ' + str(len(Spider.queue)) + ' | Crawled ' + str(len(Spider.crawled)))
 
     # pass in page url, get the html, and convert bytes into readable characters
     @staticmethod
@@ -47,7 +60,8 @@ class Spider:
         html_string = ''
         try:
             response = urlopen(page_url)
-            if response.getheader('Content-Type') == 'text/html':
+            # if response.getheader('Content-Type') == 'text/html':
+            if 'text/html' in response.getheader('Content-Type'):
                 html_bytes = response.read()
                 html_string = html_bytes.decode("utf-8")
             finder = LinkFinder(Spider.base_url, page_url)
