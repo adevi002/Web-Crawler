@@ -18,6 +18,7 @@ from general import *
 # CRAWLED_FILE = PROJECT_NAME + '/crawled.txt'
 # NUMBER_OF_THREADS = 8           # depends on operating system
 ssl._create_default_https_context = ssl._create_unverified_context
+ssl.match_hostname = lambda cert, hostname: True
 
 class StoppableThread(threading.Thread):
     def __init__(self,  *args, **kwargs):
@@ -73,7 +74,8 @@ def work():
 # Each queued link is a new job for the spiders
 def create_jobs():
     for link in file_to_set(QUEUE_FILE):
-        thread_queue.put(link)
+        if not ('mailto' in link or 'tel' in link or '#' in link or '.pdf' in link):
+            thread_queue.put(link)
     thread_queue.join()
     crawled_links = file_to_set(CRAWLED_FILE)
     if (len(crawled_links) >= PAGES_TO_CRAWL):
@@ -100,10 +102,12 @@ def dlHTML():
     if not os.path.exists('MAJ-Project/HTML'):
         os.makedirs('MAJ-Project/HTML')
     for link in crawled_links:
-        if not 'mailto:' in link:
+        req2 = requests.get(link, verify=False)
+        if (not (('mailto:' in link) or ('tel:' in link) or ('#' in link))) and req2.status_code == 200:
             page = link.split('/')[-1]
             pathString = 'MAJ-Project/HTML/' + 'post-' + str(i) + '.html'
             f = open(pathString, 'w+')
+            print(link)
             urllib.request.urlretrieve(link, pathString)
             i += 1
 
