@@ -8,10 +8,12 @@ from queue import Queue             # their jobs
 from spider import Spider
 from domain import *
 from general import *
+from shutil import copyfileobj
+from requests.exceptions import ConnectionError
 
 # multithreading
 # calls the spider over and over
-# PROJECT_NAME = 'seed'                               # video 15
+# PROJECT_NAME = 'seed'                               #  15
 # HOME_PAGE = 'https://seed.edu/'
 # DOMAIN_NAME = get_domain_name(HOME_PAGE)
 # QUEUE_FILE = PROJECT_NAME + '/queue.txt'
@@ -33,10 +35,11 @@ class StoppableThread(threading.Thread):
 
 
 print('Welcome to our CS172 Final Project. Please type a URL to crawl below:')
-PROJECT_NAME = 'MAJ-Project'                               # video 15
+PROJECT_NAME = 'MAJ-Project'                               #  15
 HOME_PAGE = str(input())
 req = requests.get(HOME_PAGE)
 if (not req.status_code == 200):
+    print(req.status_code)
     print('The URL you entered does not exist')
     exit()
 DOMAIN_NAME = get_domain_name(HOME_PAGE)
@@ -55,7 +58,7 @@ threads = []
 Spider(PROJECT_NAME, HOME_PAGE, DOMAIN_NAME, PAGES_TO_CRAWL)        # first spider
 
 # Create worker threads (spiders); will die when main exits
-def create_threads():
+def make_threads():
     for _ in range(NUMBER_OF_THREADS):              # putting an '_' disregards that value and we just loop through NUMBER_OF_THREADS times
         t = StoppableThread(target=work)           # creates n threads that just work
         t.daemon = True
@@ -72,9 +75,9 @@ def work():
         thread_queue.task_done()                    # thread ready for next job
 
 # Each queued link is a new job for the spiders
-def create_jobs():
+def make_jobs():
     for link in file_to_set(QUEUE_FILE):
-        if not ('mailto' in link or 'tel' in link or '#' in link or '.pdf' in link):
+        if not ('mailto' in link or 'tel' in link or '#' in link or '.pdf' in link or 'www.' in link):
             thread_queue.put(link)
     thread_queue.join()
     crawled_links = file_to_set(CRAWLED_FILE)
@@ -84,7 +87,7 @@ def create_jobs():
         crawl()
 
 # Check if there are items in the queue; if there are, rest of spiders will crawl them using multithreading
-def crawl():                                    # video 16
+def crawl():                                    #  16
     queued_links = file_to_set(QUEUE_FILE)
     crawled_links = file_to_set(CRAWLED_FILE)
     if (len(crawled_links) >= PAGES_TO_CRAWL):
@@ -94,7 +97,7 @@ def crawl():                                    # video 16
         global CURR_HOPS
         CURR_HOPS += 1
         if not CURR_HOPS > NUM_HOPS:
-            create_jobs()
+            make_jobs()
 
 def dlHTML():
     i = 1
@@ -102,16 +105,24 @@ def dlHTML():
     if not os.path.exists('MAJ-Project/HTML'):
         os.makedirs('MAJ-Project/HTML')
     for link in crawled_links:
-        req2 = requests.get(link, verify=False)
-        if (not (('mailto:' in link) or ('tel:' in link) or ('#' in link))) and req2.status_code == 200:
-            page = link.split('/')[-1]
-            pathString = 'MAJ-Project/HTML/' + 'post-' + str(i) + '.html'
-            f = open(pathString, 'w+')
-            print(link)
-            urllib.request.urlretrieve(link, pathString)
-            i += 1
+        try:
+            req2 = requests.get(link)
+        except ConnectionError:
+            print("Could not download link")
+        else:
+            if (not (('mailto:' in link) or ('tel:' in link) or ('#' in link))) and req2.status_code == 200:
+                page = link.split('/')[-1]
+                pathString = 'MAJ-Project/HTML/' + 'post-' + str(i) + '.html'
+                # f = open(pathString, 'w+')
+                print(link)
+                # print(req2.status_code)
+                with urllib.request.urlopen(link) as in_stream, open(pathString, 'wb') as out_file:
+                    copyfileobj(in_stream, out_file)
+                # urllib.request.urlretrieve(link, pathString)
+                i += 1
+        
 
-create_threads()
+make_threads()
 crawl()
 print("Successfully crawled", end=" ")
 print(PAGES_TO_CRAWL, end=" ")

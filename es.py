@@ -25,7 +25,7 @@ directory = "MAJ-Project/HTML/"
 for filename in os.listdir(directory):
     # if filename.endswith(".html"):
     print(filename)
-    with open(directory+filename, 'r') as f:
+    with open(directory+filename, 'r', encoding='utf-8') as f:
         contents = f.read()
         # contents.decode('latin-1')
         # dict1 = {}

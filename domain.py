@@ -1,4 +1,4 @@
-from urllib.parse import urlparse       # video 14
+from urllib.parse import urlparse       #  14
 
 
 # extracting domain name (example.com)

@@ -5,7 +5,7 @@ import sys
 
 class Spider:
 
-    # class variables shared among all instances)       # video 8
+    # class variables shared among all instances)       #  8
     project_name = ''
     base_url = ''       # home page url
     domain_name = ''
@@ -16,7 +16,7 @@ class Spider:
     crawl_limit = int()
     # crawl_curr = 0
 
-    def __init__(self, project_name, base_url, domain_name, num_crawl):       # video 9
+    def __init__(self, project_name, base_url, domain_name, num_crawl):       #  9
         Spider.project_name = project_name
         Spider.base_url = base_url
         Spider.domain_name = domain_name
@@ -29,14 +29,14 @@ class Spider:
         # first spider has the unique task of creating project directory and two data files (queue and crawled)
 
     @staticmethod
-    def First_Spider():             # video 10
-        create_project_dir(Spider.project_name)
-        create_data_files(Spider.project_name, Spider.base_url)
+    def First_Spider():             #  10
+        make_project_dir(Spider.project_name)
+        make_data_files(Spider.project_name, Spider.base_url)
         Spider.queue = file_to_set(Spider.queue_file)
         Spider.crawled = file_to_set(Spider.crawled_file)
 
     # crawls page
-    @staticmethod                   # video 11
+    @staticmethod                   #  11
     def crawl_page(thread_name, page_url):
         if page_url not in Spider.crawled:
             print(thread_name + ' is now crawling ' + page_url)
@@ -56,7 +56,7 @@ class Spider:
 
     # pass in page url, get the html, and convert bytes into readable characters
     @staticmethod
-    def gather_links(page_url):     # video 12
+    def gather_links(page_url):     #  12
         html_string = ''
         try:
             response = urlopen(page_url)
@@ -73,7 +73,7 @@ class Spider:
 
     # takes a set of links and adds it to the existing waitlist of links
     @staticmethod
-    def add_links_to_queue(links):     # video 13   
+    def add_links_to_queue(links):     #  13   
         for url in links:                       # loops through each link one by one
             if url in Spider.queue:             # if link already in queue, does not add it and continues to next item in list
                 continue

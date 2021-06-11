@@ -1,12 +1,12 @@
 import os           #allows us to create directories
 
-def create_project_dir(directory):
+def make_project_dir(directory):
     if not os.path.exists(directory):
         print('Creating project ' + directory)
         os.makedirs(directory)
 
 # Create queue and crawled files if not created already
-def create_data_files(project_name, base_url):
+def make_data_files(project_name, base_url):
     queue = project_name + '/queue.txt'         # when link found on website, adds it to this queue file (waitlist)
     crawled = project_name + '/crawled.txt'     # once a link page is crawled, it will be added to this crawled file
     if not os.path.isfile(queue):               #checks if file exists already
